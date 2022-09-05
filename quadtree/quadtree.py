@@ -67,11 +67,11 @@ class QuadTree(Generic[T]):
             center.x + radius,
             center.y + radius
         )
-        return {
+        return [
             item
             for item in self.get(box)
             if center.distance_to(item) <= radius
-        }
+        ]
 
     def all(self) -> list[T]:
         if not self.is_split:
