@@ -1,4 +1,4 @@
-# QuadTree
+# QuadTree
 
 A QuadTree is a tree data structure where each node is connected to 4 nodes when the number of items added to each node exceeds a certain capacity. The data is split according to the spacial properties of the item (x,y coordinates).
 
