@@ -91,8 +91,7 @@ class QuadTree(Generic[T]):
             self.top_left_node.copy(copy_item) if self.top_left_node else None,
             self.top_right_node.copy(copy_item) if self.top_right_node else None,
             self.bottom_right_node.copy(copy_item) if self.bottom_right_node else None,
-            self.bottom_left_node.copy(copy_item) if self.bottom_left_node else None,
-            self.is_split
+            self.bottom_left_node.copy(copy_item) if self.bottom_left_node else None
         )
 
     def _split(self):
