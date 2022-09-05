@@ -13,15 +13,21 @@ class QuadTree(Generic[T]):
     MAX_CAPACITY = 20
 
     box: Box
-    data: set[T] = field(default_factory=set)
+    items: list[T] = field(default_factory=list)
     top_left_node: Optional['QuadTree'] = None
     top_right_node: Optional['QuadTree'] = None
     bottom_right_node: Optional['QuadTree'] = None
     bottom_left_node: Optional['QuadTree'] = None
-    is_split: bool = False
+
+    @property
+    def is_split(self) -> bool:
+        return self.top_left_node is not None
 
     def add(self, item: T):
-        if len(self.data) == QuadTree.MAX_CAPACITY:
+        if not self.box.contains(item):
+            return
+
+        if len(self.items) == QuadTree.MAX_CAPACITY:
             self._split()
 
         self._add(item)
@@ -31,37 +37,28 @@ class QuadTree(Generic[T]):
             return
 
         if not self.is_split:
-            if item in self.data:
-                self.data.remove(item)
+            if item in self.items:
+                self.items.remove(item)
             return
 
-        if self.top_left_node.box.contains(item):
-            self.top_left_node.remove(item)
-        if self.top_right_node.box.contains(item):
-            self.top_right_node.remove(item)
-        if self.bottom_right_node.box.contains(item):
-            self.bottom_right_node.remove(item)
-        if self.bottom_left_node.box.contains(item):
-            self.bottom_left_node.remove(item)
+        self.top_left_node.remove(item)
+        self.top_right_node.remove(item)
+        self.bottom_right_node.remove(item)
+        self.bottom_left_node.remove(item)
 
-    def get(self, box: Box) -> set[T]:
+    def get(self, box: Box) -> list[T]:
         if not self.box.overlap(box):
-            return set()
+            return []
 
         if not self.is_split:
             return self._get(box)
 
-        result = set()
-        if self.top_left_node.box.overlap(box):
-            result |= self.top_left_node._get(box)
-        if self.top_right_node.box.overlap(box):
-            result |= self.top_right_node._get(box)
-        if self.bottom_right_node.box.overlap(box):
-            result |= self.bottom_right_node._get(box)
-        if self.bottom_left_node.box.overlap(box):
-            result |= self.bottom_left_node._get(box)
-
-        return result
+        return [
+            *self.top_left_node._get(box),
+            *self.top_right_node._get(box),
+            *self.bottom_right_node._get(box),
+            *self.bottom_left_node._get(box)
+        ]
 
     def get_in_circle(self, center: Point, radius: float) -> set[T]:
         box = Box.create(
@@ -76,21 +73,21 @@ class QuadTree(Generic[T]):
             if center.distance_to(item) <= radius
         }
 
-    def all(self) -> set[T]:
+    def all(self) -> list[T]:
         if not self.is_split:
-            return self.data
+            return self.items
 
-        result = set()
-        result |= self.top_left_node.all()
-        result |= self.top_right_node.all()
-        result |= self.bottom_right_node.all()
-        result |= self.bottom_left_node.all()
+        result = list()
+        result.extend(self.top_left_node.all())
+        result.extend(self.top_right_node.all())
+        result.extend(self.bottom_right_node.all())
+        result.extend(self.bottom_left_node.all())
         return result
 
     def copy(self, copy_item: Callable[[T], T]) -> 'QuadTree[T]':
         return QuadTree(
             self.box.copy(),
-            {copy_item(item) for item in self.data},
+            [copy_item(item) for item in self.items],
             self.top_left_node.copy(copy_item) if self.top_left_node else None,
             self.top_right_node.copy(copy_item) if self.top_right_node else None,
             self.bottom_right_node.copy(copy_item) if self.bottom_right_node else None,
@@ -111,26 +108,25 @@ class QuadTree(Generic[T]):
         self.top_right_node = QuadTree(Box.create(middle_x, top, right, middle_y))
         self.bottom_right_node = QuadTree(Box.create(middle_x, middle_y, right, bottom))
         self.bottom_left_node = QuadTree(Box.create(left, middle_y, middle_x, bottom))
-        self.is_split = True
 
-        for item in self.data:
+        for item in self.items:
             self._add(item)
 
-        self.data.clear()
+        self.items.clear()
 
     def _add(self, item: T):
         if not self.is_split:
-            self.data.add(item)
+            self.items.append(item)
             return
 
         if self.top_left_node.box.contains(item):
-            self.top_left_node.data.add(item)
+            self.top_left_node.items.append(item)
         elif self.top_right_node.box.contains(item):
-            self.top_right_node.data.add(item)
+            self.top_right_node.items.append(item)
         elif self.bottom_right_node.box.contains(item):
-            self.bottom_right_node.data.add(item)
+            self.bottom_right_node.items.append(item)
         elif self.bottom_left_node.box.contains(item):
-            self.bottom_left_node.data.add(item)
+            self.bottom_left_node.items.append(item)
 
-    def _get(self, box: Box) -> set[T]:
-        return {item for item in self.data if box.contains(item)}
+    def _get(self, box: Box) -> list[T]:
+        return [item for item in self.items if box.contains(item)]
