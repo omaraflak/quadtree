@@ -64,9 +64,11 @@ class QuadTree(Generic[T]):
         return result
 
     def get_in_circle(self, center: Point, radius: float) -> set[T]:
-        box = Box(
-            Point(center.x - radius, center.y - radius),
-            Point(center.x + radius, center.y + radius)
+        box = Box.create(
+            center.x - radius,
+            center.y - radius,
+            center.x + radius,
+            center.y + radius
         )
         return {
             item
