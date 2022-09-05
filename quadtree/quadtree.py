@@ -105,10 +105,10 @@ class QuadTree(Generic[T]):
         middle_x = (left + right) / 2
         middle_y = (top + bottom) / 2
 
-        self.top_left_node = QuadTree(Box(self.box.top_left, Point(middle_x, middle_y)))
-        self.top_right_node = QuadTree(Box(Point(middle_x, top), Point(right, middle_y)))
-        self.bottom_right_node = QuadTree(Box(Point(middle_x, middle_y), self.box.bottom_right))
-        self.bottom_left_node = QuadTree(Box(Point(left, middle_y), Point(middle_x, bottom)))
+        self.top_left_node = QuadTree(Box.create(self.box.top_left, middle_x, middle_y))
+        self.top_right_node = QuadTree(Box.create(middle_x, top, right, middle_y))
+        self.bottom_right_node = QuadTree(Box.create(middle_x, middle_y, self.box.bottom_right))
+        self.bottom_left_node = QuadTree(Box.create(left, middle_y, middle_x, bottom))
         self.is_split = True
 
         for item in self.data:
