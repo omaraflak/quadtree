@@ -127,7 +127,7 @@ class QuadTree(Generic[T]):
             self.top_right_node.data.add(item)
         elif self.bottom_right_node.box.contains(item):
             self.bottom_right_node.data.add(item)
-        else:
+        elif self.bottom_left_node.box.contains(item):
             self.bottom_left_node.data.add(item)
 
     def _get(self, box: Box) -> set[T]:
