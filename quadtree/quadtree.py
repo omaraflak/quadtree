@@ -70,7 +70,7 @@ class QuadTree(Generic[T]):
         return [
             item
             for item in self.get(box)
-            if center.distance_to(item) <= radius
+            if center.distance_to(item.to_point()) <= radius
         ]
 
     def all(self) -> list[T]:
