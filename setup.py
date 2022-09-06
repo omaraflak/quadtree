@@ -8,6 +8,6 @@ setup(
     author_email='aflakomar@gmail.com',
     packages=['quadtree'],
     install_requires=[
-        'git+https://github.com/omaraflak/geometry'
+        'geometry @ git+https://github.com/omaraflak/geometry'
     ]
 )
