@@ -6,5 +6,8 @@ setup(
     description='QuadTree library',
     author='Omar Aflak',
     author_email='aflakomar@gmail.com',
-    packages=['quadtree']
+    packages=['quadtree'],
+    install_requires=[
+        'git+https://github.com/omaraflak/geometry'
+    ]
 )

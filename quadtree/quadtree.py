@@ -1,8 +1,8 @@
 from typing import Optional, Generic, TypeVar, Callable
 from dataclasses import dataclass, field
 from quadtree.locatable import Locatable
-from quadtree.point import Point
-from quadtree.box import Box
+from geometry.point import Point
+from geometry.box import Box
 
 
 T = TypeVar('T', bound=Locatable)
@@ -24,7 +24,7 @@ class QuadTree(Generic[T]):
         return self.top_left_node is not None
 
     def add(self, item: T):
-        if not self.box.contains(item):
+        if not self.box.contains(item.to_point()):
             return
 
         if len(self.items) == QuadTree.MAX_CAPACITY:
@@ -33,7 +33,7 @@ class QuadTree(Generic[T]):
         self._add(item)
 
     def remove(self, item: T):
-        if not self.box.contains(item):
+        if not self.box.contains(item.to_point()):
             return
 
         if not self.is_split:
@@ -47,7 +47,7 @@ class QuadTree(Generic[T]):
         self.bottom_left_node.remove(item)
 
     def get(self, box: Box) -> list[T]:
-        if not self.box.overlap(box):
+        if not self.box.intersect(box):
             return []
 
         if not self.is_split:
@@ -118,14 +118,14 @@ class QuadTree(Generic[T]):
             self.items.append(item)
             return
 
-        if self.top_left_node.box.contains(item):
+        if self.top_left_node.box.contains(item.to_point()):
             self.top_left_node.items.append(item)
-        elif self.top_right_node.box.contains(item):
+        elif self.top_right_node.box.contains(item.to_point()):
             self.top_right_node.items.append(item)
-        elif self.bottom_right_node.box.contains(item):
+        elif self.bottom_right_node.box.contains(item.to_point()):
             self.bottom_right_node.items.append(item)
-        elif self.bottom_left_node.box.contains(item):
+        elif self.bottom_left_node.box.contains(item.to_point()):
             self.bottom_left_node.items.append(item)
 
     def _get(self, box: Box) -> list[T]:
-        return [item for item in self.items if box.contains(item)]
+        return [item for item in self.items if box.contains(item.to_point())]
