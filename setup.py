@@ -6,6 +6,5 @@ setup(
     description='QuadTree library',
     author='Omar Aflak',
     author_email='aflakomar@gmail.com',
-    packages=['quadtree'],
-    install_requires=['wheel']
+    packages=['quadtree']
 )
