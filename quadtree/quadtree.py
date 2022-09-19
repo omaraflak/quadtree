@@ -133,13 +133,13 @@ class QuadTree(Generic[T]):
             return
 
         if self.top_left_node.box.contains(item.to_point()):
-            self.top_left_node.items.append(item)
+            self.top_left_node.add(item)
         elif self.top_right_node.box.contains(item.to_point()):
-            self.top_right_node.items.append(item)
+            self.top_right_node.add(item)
         elif self.bottom_right_node.box.contains(item.to_point()):
-            self.bottom_right_node.items.append(item)
+            self.bottom_right_node.add(item)
         elif self.bottom_left_node.box.contains(item.to_point()):
-            self.bottom_left_node.items.append(item)
+            self.bottom_left_node.add(item)
 
     def _get(self, box: Box) -> list[T]:
         return [item for item in self.items if box.contains(item.to_point())]
