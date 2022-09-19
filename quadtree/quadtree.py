@@ -18,7 +18,9 @@ class QuadTree(Generic[T]):
     top_right_node: Optional['QuadTree'] = None
     bottom_right_node: Optional['QuadTree'] = None
     bottom_left_node: Optional['QuadTree'] = None
-    should_split: Callable[[list[T]], bool] = lambda x: len(x) == QuadTree.MAX_CAPACITY
+    split_criteria: Optional[Callable[[list[T]], bool]] = None
+    depth: int = 0
+    max_depth: int = 0
 
     @property
     def is_split(self) -> bool:
@@ -28,7 +30,7 @@ class QuadTree(Generic[T]):
         if not self.box.contains(item.to_point()):
             return
 
-        if self.should_split(self.items):
+        if self._should_split(self.items):
             self._split()
 
         self._add(item)
@@ -97,8 +99,19 @@ class QuadTree(Generic[T]):
             self.top_right_node.copy(copy_item) if self.top_right_node else None,
             self.bottom_right_node.copy(copy_item) if self.bottom_right_node else None,
             self.bottom_left_node.copy(copy_item) if self.bottom_left_node else None,
-            self.should_split
+            self.split_criteria,
+            self.depth,
+            self.max_depth,
         )
+
+    def _should_split(self, items: list[T]) -> bool:
+        if self.max_depth > 0 and self.depth >= self.max_depth:
+            return False
+
+        if not self.split_criteria:
+            return len(items) == QuadTree.MAX_CAPACITY
+
+        return self.split_criteria(items)
 
     def _split(self):
         top = self.box.top
@@ -109,27 +122,23 @@ class QuadTree(Generic[T]):
         middle_x = (left + right) / 2
         middle_y = (top + bottom) / 2
 
-        self.top_left_node = QuadTree(
-            Box.create(left, top, middle_x, middle_y),
-            should_split=self.should_split
-        )
-        self.top_right_node = QuadTree(
-            Box.create(middle_x, top, right, middle_y),
-            should_split=self.should_split
-        )
-        self.bottom_right_node = QuadTree(
-            Box.create(middle_x, middle_y, right, bottom),
-            should_split=self.should_split
-        )
-        self.bottom_left_node = QuadTree(
-            Box.create(left, middle_y, middle_x, bottom),
-            should_split=self.should_split
-        )
+        self.top_left_node = self._next_level_node(Box.create(left, top, middle_x, middle_y))
+        self.top_right_node = self._next_level_node(Box.create(middle_x, top, right, middle_y))
+        self.bottom_right_node = self._next_level_node(Box.create(middle_x, middle_y, right, bottom))
+        self.bottom_left_node = self._next_level_node(Box.create(left, middle_y, middle_x, bottom))
 
         for item in self.items:
             self._add(item)
 
         self.items.clear()
+
+    def _next_level_node(self, box: Box) -> 'QuadTree[T]':
+        return QuadTree(
+            box,
+            depth=self.depth + 1,
+            max_depth=self.max_depth,
+            split_criteria=self.split_criteria
+        )
 
     def _add(self, item: T):
         if not self.is_split:
