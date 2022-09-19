@@ -52,13 +52,17 @@ class QuadTree(Generic[T]):
             return []
 
         if not self.is_split:
-            return self._get(box)
+            return [
+                item
+                for item in self.items
+                if box.contains(item.to_point())
+            ]
 
         return [
-            *self.top_left_node._get(box),
-            *self.top_right_node._get(box),
-            *self.bottom_right_node._get(box),
-            *self.bottom_left_node._get(box)
+            *self.top_left_node.get(box),
+            *self.top_right_node.get(box),
+            *self.bottom_right_node.get(box),
+            *self.bottom_left_node.get(box)
         ]
 
     def get_in_circle(self, center: Point, radius: float) -> list[T]:
@@ -141,5 +145,3 @@ class QuadTree(Generic[T]):
         elif self.bottom_left_node.box.contains(item.to_point()):
             self.bottom_left_node.add(item)
 
-    def _get(self, box: Box) -> list[T]:
-        return [item for item in self.items if box.contains(item.to_point())]
